@@ -1,64 +1,20 @@
-<<<<<<< HEAD
-# Assignment 01 — Answers
-
-Student name:Omar Salem  
-Group / ID: Group 3 (sunday / wednesday 7:00pm)
-
-## Problems with the current design
-
-- The export is processed sequentially. Each order must finish loading, reading the customer file, and writing the invoice before the next order starts. As the number of orders grows, the total export time grows with the time spent waiting for every operation.
-
-- The database and file operations use Thread.Sleep to simulate waiting. Thread.Sleep blocks the current thread during that time, so it cannot do other useful work.
-
-- The baseline run took 6.0 seconds and wrote five invoices, from invoice-1001.txt to invoice-1005.txt.
-
-## What you changed
-
-- I replaced Thread.Sleep with Task.Delay and used asynchronous file read and write operations.
-
-- I changed the export flow to start a task for each order, then await the tasks one by one. The steps for each invoice remain in the same order: load the order, read the customer profile, and write the invoice.
-
-- After the changes, the run took 1.8 seconds and still produced all five invoices. The Wrote messages appeared in a different order because the invoice tasks were running concurrently.
-
-# Console output before changes
-
-[
-Starting invoice export...
-Customer files: D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\InvoiceExport\bin\Debug\net9.0\Data
-Invoice output: D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices
-Wrote D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1001.txt
-Wrote D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1002.txt
-Wrote D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1003.txt
-Wrote D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1004.txt
-Wrote D:.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1005.txt
-Export finished in 6.0 s
-]
-
-# Console output after changes
-
-[
-Starting invoice export...
-Customer files: D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\InvoiceExport\bin\Debug\net9.0\Data
-Invoice output: D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices
-
-Wrote D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1002.txt
-Wrote D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1001.txt
-Wrote D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1004.txt
-Wrote D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1003.txt
-Wrote D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\01-InvoiceExport\InvoiceExport\AdvancedCsharp-Assignment-01-InvoiceExport\invoices\invoice-1005.txt
-Export finished in 1.8 s
-]
-=======
 # Assignment 02 — Answers
 
-Student name:  
-Group / ID:
+Student name: Omar Salem
+Group / ID: Group 3 (Sunday / Wednesday 7:00 pm)
 
 ## What is wrong
 
--
+- The availability check and the updates to `TablesLeft` and `Booked` were not protected as one operation. Multiple customer threads could read that a table was available at the same time, then decrement the counter separately. This race condition caused incorrect totals and allowed more bookings than the five available tables.
+- `Thread.Sleep(20)` made the race easier to observe by leaving time between the availability check and the counter updates.
+- Before the fix, the final results varied between runs:
+  - Run 1: `Booked=15, TablesLeft=2`
+  - Run 2: `Booked=19, TablesLeft=4`
+  - Run 3: `Booked=7, TablesLeft=4`
+- The correct final result with five tables is `Booked=5, TablesLeft=0`.
 
 ## How you fixed it
 
--
->>>>>>> 20ffe40 (Add Assignment starter (neutral names).)
+- I added a lock around the availability check and the counter updates so only one customer thread can perform the booking operation at a time. This prevents two threads from booking the same remaining table.
+- I saved the remaining-table count while holding the lock, then printed that saved value after leaving the lock so each message matches that booking.
+- After the fix, one observed run ended with `Booked=5, TablesLeft=0`. Run the program multiple times and add the actual final result for each run here.
