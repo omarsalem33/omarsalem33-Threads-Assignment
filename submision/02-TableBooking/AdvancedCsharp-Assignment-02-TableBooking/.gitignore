@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+.vs/
+*.user
+<<<<<<< HEAD
+invoices/
+=======
+>>>>>>> 20ffe40 (Add Assignment starter (neutral names).)
