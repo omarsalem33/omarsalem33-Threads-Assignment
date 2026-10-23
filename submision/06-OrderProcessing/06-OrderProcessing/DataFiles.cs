@@ -1,0 +1,42 @@
+namespace _06_OrderProcessing;
+
+public static class DataFiles
+{
+    public static string DirectoryPath =>
+        Path.Combine(AppContext.BaseDirectory,"Data");
+
+    public static string InvoicesDirectory =>
+        Path.Combine(DirectoryPath, "invoices");
+
+    public static string ReportsDirectory =>
+        Path.Combine(DirectoryPath, "reports");
+
+
+    public const string Customers = "customers.json";
+    public const string Products = "products.json";
+    public const string Coupons = "coupons.json";
+    public const string IncomingOrders = "incoming_orders.json";
+
+    public const string Orders = "orders.json";
+    public const string Payments = "payments.json";
+    public const string Emails = "emails.json";
+    public const string EmailRetry = "email_retry.json";
+
+
+    public static string GetFullPath(string fileName)=>
+        Path.Combine(DirectoryPath, fileName);
+
+    public static string GetInvoicePath(string orderId) => 
+        Path.Combine(InvoicesDirectory, $"invoice_{orderId}.txt");
+
+    public static string GetReportPath(DateTime timestamp) => 
+        Path.Combine(ReportsDirectory, $"report_{timestamp:yyyyMMdd_HHmmss}.json");
+
+    public static void EnsureDirectoriesExist()
+    {
+        Directory.CreateDirectory(DirectoryPath);
+        Directory.CreateDirectory(InvoicesDirectory);
+        Directory.CreateDirectory(ReportsDirectory);
+            
+    }
+}
