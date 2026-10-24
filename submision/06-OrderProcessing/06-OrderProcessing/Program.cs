@@ -2,8 +2,10 @@
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        using var cts = new CancellationTokenSource();
+        await DataSeeder.ResetAsync(cts.Token);
     }
+
 }
