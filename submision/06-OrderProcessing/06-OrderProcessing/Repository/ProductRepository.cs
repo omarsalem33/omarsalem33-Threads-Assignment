@@ -57,7 +57,7 @@ public class ProductRepository
 
         Product product = await GetByIdAsync(productId, ct);
 
-        if (qty - product.StockQuantity < 0 )
+        if (product.StockQuantity- qty  < 0 )
         {
             Log.Error(source,"Products not found");
             return false;
