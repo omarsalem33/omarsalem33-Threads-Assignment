@@ -1,0 +1,15 @@
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\bin\Debug\net10.0\06-OrderProcessing.exe
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\bin\Debug\net10.0\06-OrderProcessing.deps.json
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\bin\Debug\net10.0\06-OrderProcessing.runtimeconfig.json
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\bin\Debug\net10.0\06-OrderProcessing.dll
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\bin\Debug\net10.0\06-OrderProcessing.pdb
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.GeneratedMSBuildEditorConfig.editorconfig
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.AssemblyInfoInputs.cache
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.AssemblyInfo.cs
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.csproj.CoreCompileInputs.cache
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.sourcelink.json
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.dll
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\refint\06-OrderProcessing.dll
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.pdb
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\06-OrderProcessing.genruntimeconfig.cache
+D:\.NET Course\Assignments\C# Assingments\omarsalem33-Threads-Assignment\submision\06-OrderProcessing\06-OrderProcessing\obj\Debug\net10.0\ref\06-OrderProcessing.dll
