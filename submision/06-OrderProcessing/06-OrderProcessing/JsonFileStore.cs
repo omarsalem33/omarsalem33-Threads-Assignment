@@ -9,7 +9,6 @@ public static class JsonFileStore
 
     private static SemaphoreSlim GetFileLock(string filePath)
         => _fileLocks.GetOrAdd(filePath, _ => new SemaphoreSlim(1, 1));
-
     public static async Task<T> ReadAsync<T>(string filePath , CancellationToken cancellationToken) where T : new()
     {
         var semaphore =GetFileLock(filePath);
@@ -81,7 +80,6 @@ public static class JsonFileStore
             semaphore.Release();
         }
     }
-    
     public static T Read<T>(string filePath) where T : new()
     {
         var semaphore = GetFileLock(filePath);
@@ -110,7 +108,6 @@ public static class JsonFileStore
             semaphore.Release();
         }
     }
-
     public static void Write<T>(string filePath, T data)
     {
         var semaphore = GetFileLock(filePath);
@@ -154,7 +151,61 @@ public static class JsonFileStore
             semaphore.Release();
         }
     }
-    
+    public static T Update<T>(string filePath, Func<T, T> update) where T : new()
+    {
+        var semaphore = GetFileLock(filePath);
+        semaphore.Wait();
+        string tempFilePath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+
+        try
+        {
+            T current;
+            if (!File.Exists(filePath))
+            {
+                current = new T();
+            }
+            else
+            {
+                using var readStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                try
+                {
+                    current = JsonSerializer.Deserialize<T>(readStream, JsonDefaults.JsonSerializerOptions) ?? new T();
+                }
+                catch (JsonException ex)
+                {
+                    throw new DataFileCorruptedException(
+                        Path.GetFileName(filePath),
+                        $"The data file '{Path.GetFileName(filePath)}' contains invalid JSON.",
+                        ex);
+                }
+            }
+
+            T updated = update(current);
+            string? directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            using (var writeStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                JsonSerializer.Serialize(writeStream, updated, JsonDefaults.JsonSerializerOptions);
+            }
+
+            File.Move(tempFilePath, filePath, overwrite: true);
+            return updated;
+        }
+        finally
+        {
+            if (File.Exists(tempFilePath))
+            {
+                try { File.Delete(tempFilePath); }
+                catch { }
+            }
+
+            semaphore.Release();
+        }
+    }
     public static async Task<T> UpdateAsync<T>(string filePath, Func<T, T> update, CancellationToken ct) where T : new() 
     {
         var semaphore = GetFileLock(filePath);

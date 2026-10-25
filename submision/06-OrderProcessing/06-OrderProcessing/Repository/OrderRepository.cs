@@ -11,28 +11,29 @@ public class OrderRepository
 
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
-
         Log.Info(source, "Beginning transaction...");
         await Task.Delay(100, ct);
-
         Log.Info(source, $"Inserting or updating Order #{order.Id}...");
         await Task.Delay(400, ct);
 
         string filePath = DataFiles.GetFullPath(DataFiles.Orders);
         await JsonFileStore.UpdateAsync<List<Order>>(filePath, orders =>
+        {
+            int index = orders.FindIndex(existingOrder => existingOrder.Id == order.Id);
+            if (index >= 0)
             {
-                int index = orders.FindIndex(existingOrder => existingOrder.Id == order.Id);
-                if (index >= 0)
-                    orders[index] = order;
-                else
-                    orders.Add(order);
+                orders[index] = order;
+            }
+            else
+            {
+                orders.Add(order);
+            }
 
-                return orders;
-            }, ct);
+            return orders;
+        }, ct);
 
         Log.Info(source, "Committing transaction...");
         await Task.Delay(200, ct);
-
         Log.Success(source, $"Order #{order.Id} saved");
     }
 
@@ -42,14 +43,12 @@ public class OrderRepository
 
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
-
-        int queryDelay = Random.Shared.Next(300, 600);
+        int queryDelay = Random.Shared.Next(300, 601);
         Log.Info(source, "Executing query for all orders...");
         await Task.Delay(queryDelay, ct);
 
         string filePath = DataFiles.GetFullPath(DataFiles.Orders);
         List<Order> orders = await JsonFileStore.ReadAsync<List<Order>>(filePath, ct);
-
         Log.Success(source, $"Loaded {orders.Count} orders");
         return orders;
     }
@@ -60,17 +59,13 @@ public class OrderRepository
 
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
-
-        int queryDelay = Random.Shared.Next(300, 600);
+        int queryDelay = Random.Shared.Next(300, 601);
         Log.Info(source, $"Executing query for orders with status {status}...");
         await Task.Delay(queryDelay, ct);
 
         string filePath = DataFiles.GetFullPath(DataFiles.Orders);
         List<Order> orders = await JsonFileStore.ReadAsync<List<Order>>(filePath, ct);
-        List<Order> matchingOrders = orders
-            .Where(order => order.Status == status)
-            .ToList();
-
+        List<Order> matchingOrders = orders.Where(order => order.Status == status).ToList();
         Log.Success(source, $"Found {matchingOrders.Count} orders with status {status}");
         return matchingOrders;
     }

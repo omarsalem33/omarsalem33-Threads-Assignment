@@ -8,32 +8,32 @@ public class OrderValidator
     private readonly CustomerRepository _customers;
     private readonly ProductRepository _products;
     private readonly CouponRepository _coupons;
-    private readonly OrderRepository _orders;
 
-    public OrderValidator(CustomerRepository customers, ProductRepository products, CouponRepository coupons, OrderRepository orders)
+    public OrderValidator(
+        CustomerRepository customers,
+        ProductRepository products,
+        CouponRepository coupons)
     {
         _customers = customers;
         _products = products;
         _coupons = coupons;
-        _orders = orders;
     }
 
     public async Task ValidateOrderAsync(Order order, CancellationToken ct)
     {
         const string source = nameof(OrderValidator);
-
         Log.Info(source, $"Validating Order #{order.Id}...");
 
         Customer? customer = await _customers.GetByIdAsync(order.CustomerId, ct);
         if (customer is null)
         {
-            await RejectAsync(order, $"Customer #{order.CustomerId} not found", ct);
+            Reject(order, $"Customer #{order.CustomerId} not found");
             return;
         }
 
         if (!customer.IsActive)
         {
-            await RejectAsync(order, "Customer is inactive", ct);
+            Reject(order, "Customer is inactive");
             return;
         }
 
@@ -42,13 +42,13 @@ public class OrderValidator
             Product? product = await _products.GetByIdAsync(item.ProductId, ct);
             if (product is null)
             {
-                await RejectAsync(order, $"Product #{item.ProductId} not found", ct);
+                Reject(order, $"Product #{item.ProductId} not found");
                 return;
             }
 
             if (product.StockQuantity < item.Quantity)
             {
-                await RejectAsync(order, $"Insufficient stock for '{product.Name}'", ct);
+                Reject(order, $"Insufficient stock for '{product.Name}'");
                 return;
             }
         }
@@ -58,30 +58,26 @@ public class OrderValidator
             Coupon? coupon = await _coupons.GetByCodeAsync(order.CouponCode, ct);
             if (coupon is null)
             {
-                await RejectAsync(order, $"Coupon '{order.CouponCode}' does not exist", ct);
+                Reject(order, $"Coupon '{order.CouponCode}' does not exist");
                 return;
             }
 
             if (coupon.ExpiryDate < DateTime.Today)
             {
-                await RejectAsync(order, $"Coupon '{order.CouponCode}' has expired", ct);
+                Reject(order, $"Coupon '{order.CouponCode}' has expired");
                 return;
             }
         }
 
         order.Status = OrderStatus.Validated;
         order.FailureReason = null;
-        await _orders.SaveAsync(order, ct);
-
         Log.Success(source, $"Order #{order.Id} validated");
     }
 
-    private async Task RejectAsync(Order order, string reason, CancellationToken ct)
+    private static void Reject(Order order, string reason)
     {
         order.Status = OrderStatus.Rejected;
         order.FailureReason = reason;
-
         Log.Error(nameof(OrderValidator), $"Order #{order.Id} rejected: {reason}");
-        await _orders.SaveAsync(order, ct);
     }
 }

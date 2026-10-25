@@ -8,9 +8,8 @@ public class Report
     public int RejectedCount { get; set; }
     public int FailedCount { get; set; }
     public int PaymentFailedCount { get; set; }
-    public string TopSellingProduct { get; set; }
+    public string TopSellingProduct { get; set; } = string.Empty;
     public int TopSellingQuantity { get; set; }
     public decimal AverageOrderValue { get; set; }
     public DateTime GeneratedAt { get; set; }
-    
 }

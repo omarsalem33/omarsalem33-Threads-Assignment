@@ -11,7 +11,7 @@ public class IncomingOrderRepository
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
 
-        int queryDelay = Random.Shared.Next(300, 600);
+        int queryDelay = Random.Shared.Next(300, 601);
         Log.Info(source, "Executing query for incoming orders...");
         await Task.Delay(queryDelay, ct);
 

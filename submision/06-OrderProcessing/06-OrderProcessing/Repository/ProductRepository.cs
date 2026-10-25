@@ -7,18 +7,18 @@ public class ProductRepository
     public async Task<Product?> GetByIdAsync(int id, CancellationToken ct)
     {
         const string source = nameof(ProductRepository);
-        
+
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
 
-        int queryDelay = Random.Shared.Next(300, 600);
-        Log.Info(source , $"Executing query for Customer #{id}...");
+        int queryDelay = Random.Shared.Next(300, 601);
+        Log.Info(source, $"Executing query for Product #{id}...");
         await Task.Delay(queryDelay, ct);
 
         string filePath = DataFiles.GetFullPath(DataFiles.Products);
         List<Product> products = await JsonFileStore.ReadAsync<List<Product>>(filePath, ct);
+        Product? product = products.FirstOrDefault(item => item.Id == id);
 
-        Product? product = products.FirstOrDefault(p => p.Id == id);
         if (product is null)
         {
             Log.Error(source, $"Product #{id} not found");
@@ -27,42 +27,46 @@ public class ProductRepository
 
         Log.Success(source, $"Product #{id} found ({product.Name})");
         return product;
-
     }
 
-    // public async Task<List<Product>> GetAllAsync(CancellationToken ct)
-    // {
-    //     const string source = nameof(ProductRepository);
-    //     Log.Info(source,"Opening connection...");
-    //     await Task.Delay(200, ct);
-    //     int queryDelay = Random.Shared.Next(300, 600);
-    //     
-    //     string filePath = DataFiles.GetFullPath(DataFiles.Products);
-    //     List<Product>? products = await JsonFileStore.ReadAsync<List<Product>>(filePath, ct);
-    //
-    //     if (products == null)
-    //     {
-    //         Log.Error(source,"Products not found");
-    //         return null;
-    //     }
-    //     Log.Success(source, $"Products found ({products.Count})");
-    //     return products;
-    // }
-
-    public async Task<bool> ReserveStockAsync(int productId, int qty , CancellationToken ct)
+    public async Task<bool> ReserveStockAsync(int productId, int qty, CancellationToken ct)
     {
         const string source = nameof(ProductRepository);
-        
-        Log.Info(source,"Opening connection...");
 
-        Product product = await GetByIdAsync(productId, ct);
+        Log.Info(source, "Opening connection...");
+        await Task.Delay(200, ct);
 
-        if (product.StockQuantity- qty  < 0 )
+        Log.Info(source, "Beginning transaction...");
+        await Task.Delay(100, ct);
+
+        Log.Info(source, $"Updating stock for Product #{productId}...");
+        await Task.Delay(400, ct);
+
+        bool reserved = false;
+        string filePath = DataFiles.GetFullPath(DataFiles.Products);
+        await JsonFileStore.UpdateAsync<List<Product>>(filePath, products =>
         {
-            Log.Error(source,"Products not found");
+            Product? product = products.FirstOrDefault(item => item.Id == productId);
+            if (product is null || product.StockQuantity < qty)
+            {
+                return products;
+            }
+
+            product.StockQuantity -= qty;
+            reserved = true;
+            return products;
+        }, ct);
+
+        Log.Info(source, "Committing transaction...");
+        await Task.Delay(200, ct);
+
+        if (!reserved)
+        {
+            Log.Error(source, $"Could not reserve {qty} units for Product #{productId}");
             return false;
         }
-        Log.Success(source,$"Product StockQuantity is {qty - product.StockQuantity}");
+
+        Log.Success(source, $"Reserved {qty} units for Product #{productId}");
         return true;
     }
 }

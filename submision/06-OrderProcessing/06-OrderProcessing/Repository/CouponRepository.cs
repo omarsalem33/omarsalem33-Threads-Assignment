@@ -4,29 +4,29 @@ namespace _06_OrderProcessing.Repository;
 
 public class CouponRepository
 {
-    public async Task<Coupon?> GetByCodeAsync(string code,  CancellationToken ct)
+    public async Task<Coupon?> GetByCodeAsync(string code, CancellationToken ct)
     {
         const string source = nameof(CouponRepository);
 
         Log.Info(source, "Opening connection...");
         await Task.Delay(200, ct);
 
-        int queryDelay = Random.Shared.Next(300, 600);
-        Log.Info(source, $"Executing query for Coupon #{code}...");
+        int queryDelay = Random.Shared.Next(300, 601);
+        Log.Info(source, $"Executing query for Coupon '{code}'...");
         await Task.Delay(queryDelay, ct);
 
         string filePath = DataFiles.GetFullPath(DataFiles.Coupons);
-        List<Coupon> Coupons = await JsonFileStore.ReadAsync<List<Coupon>>(filePath, ct);
-        Coupon? coupon = Coupons.FirstOrDefault(c =>
-            string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase));
+        List<Coupon> coupons = await JsonFileStore.ReadAsync<List<Coupon>>(filePath, ct);
+        Coupon? coupon = coupons.FirstOrDefault(item =>
+            string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase));
 
         if (coupon is null)
         {
-            Log.Error(source, $"Customer #{code} not found");
+            Log.Error(source, $"Coupon '{code}' not found");
             return null;
         }
 
-        Log.Success(source, $"Customer #{code} found ({coupon.Code})");
+        Log.Success(source, $"Coupon '{coupon.Code}' found");
         return coupon;
     }
 }
