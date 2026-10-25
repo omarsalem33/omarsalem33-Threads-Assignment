@@ -173,8 +173,7 @@ public static class JsonFileStore
                 }
                 catch (JsonException ex)
                 {
-                    throw new DataFileCorruptedException(
-                        Path.GetFileName(filePath),
+                    throw new DataFileCorruptedException(Path.GetFileName(filePath),
                         $"The data file '{Path.GetFileName(filePath)}' contains invalid JSON.",
                         ex);
                 }
