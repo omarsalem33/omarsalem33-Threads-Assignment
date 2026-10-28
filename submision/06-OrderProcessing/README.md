@@ -49,3 +49,14 @@ A repository may need to wait for a file or database operation Returning `Task<T
 `File.ReadAllTextAsync` returns a `Task<string>` that can be awaited. During an asynchronous file read, the thread does not need to stay occupied while waiting for the disk operation to complete
 
 ---
+
+## Phase 2 - Pricing Comparison
+
+I ran both pricing methods with Order #1. They produced the same totals, while the concurrent method completed faster in this run.
+
+| Method | Time | SubTotal | Discount | Shipping | Total |
+|---|---:|---:|---:|---:|---:|
+| Sequential | 5.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
+| Concurrent | 3.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
+
+The log showed the discount and shipping API calls starting before either result was awaited in the concurrent method.
