@@ -1,24 +1,57 @@
 # 06 Mini Project - Order Processing System
 
-## JsonFileStore
+## Project Overview
 
-In this project, each data collection is stored in a JSON file inside the `Data` folder. I created the `JsonFileStore` class to be the only class responsible for reading and writing JSON files.
+This project is a C# console application that processes customer orders using JSON files as storage. It covers synchronous and asynchronous operations, order validation, pricing, stock reservations, invoice generation, and concurrent order processing.
 
-The class provides async methods for common operations:
+## How to Run
 
-- `ReadAsync<T>` reads the data. If the file does not exist, it returns an empty collection.
-- `WriteAsync<T>` writes the data.
-- `UpdateAsync<T>` reads, updates, and saves the data as one operation, so simultaneous updates to the same file do not overwrite each other.
+From the `06-OrderProcessing` folder, run:
 
-The class also provides `Read<T>` and `Write<T>` for the synchronous versions, which I will use to compare them with the async versions.
+```powershell
+dotnet run --project .\06-OrderProcessing\06-OrderProcessing.csproj
+```
 
-All async methods accept a `CancellationToken`, so I can cancel an operation. I used `SemaphoreSlim` to control access to the same file during read and write operations.
+The project targets .NET 10. The `Data` folder is created under the application's output directory, for example:
 
-When writing, the data is first saved to a temporary file. After the write is complete, the temporary file replaces the original file. This helps prevent the original file from being left with incomplete JSON if a problem occurs during writing.
+```text
+06-OrderProcessing\bin\Debug\net10.0\Data
+```
 
-I used `System.Text.Json` with shared settings in `JsonDefaults`. These settings write property names in camelCase and store enums as text. If a file contains invalid JSON, `JsonFileStore` throws a `DataFileCorruptedException` whose message includes the file name.
+## Project Structure
 
-There are no simulated delays inside `JsonFileStore`. Delays belong in the repositories and services.
+- `Models/`: Classes representing customers, products, orders, payments, coupons, and reports.
+- `Enums/`: Enum types used for order and payment statuses.
+- `Repository/`: Classes that read, validate, and save data. There are synchronous and asynchronous versions for comparison.
+- `Service/`: Business operations such as pricing, stock reservations, order processing, and invoice generation.
+- `DataFiles.cs`: Builds paths for the JSON files and output folders.
+- `DataSeeder.cs`: Resets the data files and fills them with sample records.
+- `JsonFileStore.cs`: Handles JSON file reads, writes, and updates.
+- `JsonDefaults.cs`: Shared JSON serialization settings.
+- `Log.cs`: Writes timestamped messages with the current thread ID.
+
+## JSON Storage
+
+Each collection is stored in its own file under `Data`:
+
+- `customers.json`
+- `products.json`
+- `coupons.json`
+- `incoming_orders.json`
+- `orders.json`
+- `payments.json`
+- `emails.json`
+- `email_retry.json`
+
+Invoices are written under `Data/invoices`, and generated reports are written under `Data/reports`.
+
+`JsonFileStore` is responsible for reading and writing the JSON files. It uses a `SemaphoreSlim` for each file. `UpdateAsync` keeps the read, update, and write steps together under the same lock so concurrent updates do not overwrite one another.
+
+When writing a file, the data is first serialized to a temporary file. The temporary file then replaces the original file. This helps avoid leaving a partially written JSON file.
+
+The project uses `System.Text.Json` with shared settings in `JsonDefaults`. Property names are written in camelCase, and enums are stored as text. Invalid JSON causes a `DataFileCorruptedException`.
+
+The repositories and services simulate network or database delays. These delays are not placed inside `JsonFileStore`.
 
 ---
 
@@ -26,37 +59,110 @@ There are no simulated delays inside `JsonFileStore`. Delays belong in the repos
 
 ### 1. Why are the sync and async times almost the same?
 
-Both versions process the orders one at a time The async version uses `await` but that does not make the orders run in parallel It mainly allows the thread to do other work while waiting Since the total waiting time for each order is similar the overall times are also close
+Both versions process orders one at a time. The async version uses `await`, but that does not make the orders run in parallel. It allows the thread to do other work while an operation is waiting. Since the total waiting time for each order is similar, the overall times can also be close.
 
 ### 2. Is the thread ID before an `await` always the same as after it? Why?
 
-No The code after an `await` may continue on a different thread depending on the execution context and scheduler In my logs the thread IDs before and after the awaited operation show whether the thread changed in that run Getting the same ID once does not guarantee it will always be the same
+No. The code after an `await` may continue on a different thread, depending on the execution context and scheduler. In my logs, the thread IDs before and after an awaited operation show whether the thread changed in that run. Seeing the same ID once does not mean it will always be the same.
 
 ### 3. What does the thread do while waiting in `Task.Delay()` and `Thread.Sleep()`?
 
-While `Task.Delay()` is waiting, the thread is available to do other work After the delay finishes, the code continues after `await`
+While `Task.Delay()` is waiting, the thread is available to do other work. When the delay finishes, the code continues after `await`.
 
-With `Thread.Sleep()` the current thread is blocked until the sleep time ends so it cannot do other work during that time
+With `Thread.Sleep()`, the current thread is blocked until the sleep time ends, so it cannot do other work during that time.
 
 ### 4. Why should a repository method return `Task<T>` instead of `T`?
 
-A repository may need to wait for a file or database operation Returning `Task<T>` lets the caller use `await` without blocking its thread while waiting Returning `T` means the result is returned synchronously so the caller has to wait for the operation to finish
+A repository may need to wait for a file or database operation. Returning `Task<T>` lets the caller use `await` without blocking its thread while waiting. Returning `T` means the result is returned synchronously, so the caller has to wait for the operation to finish.
 
 ### 5. What is the difference between `File.ReadAllText` and `File.ReadAllTextAsync`?
 
-`File.ReadAllText` reads the file synchronously so the calling thread waits until the read finishes
+`File.ReadAllText` reads the file synchronously, so the calling thread waits until the read finishes.
 
-`File.ReadAllTextAsync` returns a `Task<string>` that can be awaited. During an asynchronous file read, the thread does not need to stay occupied while waiting for the disk operation to complete
+`File.ReadAllTextAsync` returns a `Task<string>` that can be awaited. During an asynchronous file read, a thread does not need to stay occupied while waiting for the disk operation to complete.
 
 ---
 
-## Phase 2 - Pricing Comparison
+## Phase 2 - Concurrent Processing
 
-I ran both pricing methods with Order #1. They produced the same totals, while the concurrent method completed faster in this run.
+### Pricing Comparison
 
-| Method | Time | SubTotal | Discount | Shipping | Total |
+I ran the sequential and concurrent pricing methods with Order #1. Both methods produced the same totals. The concurrent method took less elapsed time in this run.
+
+| Method | Time | Subtotal | Discount | Shipping | Total |
 |---|---:|---:|---:|---:|---:|
 | Sequential | 5.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
 | Concurrent | 3.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
 
-The log showed the discount and shipping API calls starting before either result was awaited in the concurrent method.
+These measurements are from one local run, so the times can change between runs. The logs showed the discount and shipping calls starting before either result was awaited in the concurrent method.
+
+### Stock Reservation
+
+The stock race demo uses Orders #10 and #11, which both try to reserve the last Mechanical Keyboard.
+
+The unsafe version reads the stock before updating it. Both orders can read a stock value of `1` and both can report a successful reservation.
+
+The safe version performs the stock check and update inside `JsonFileStore.UpdateAsync`. The expected result is that one reservation succeeds, the other fails, and the stock ends at `0`.
+
+### Order Processing and Invoices
+
+`OrderProcessorV2` processes validated orders by reserving their items in order, pricing the order, generating its invoice, and saving it as completed. If a stock reservation fails, it releases items already reserved, saves the order as rejected, and returns `false`.
+
+`InvoiceGenerator` uses `Task.Run` for the simulated CPU-heavy rendering loop, then writes the invoice file asynchronously under `Data/invoices`.
+
+The full Phase 2 processing run and Report Generation task (8.6) still need to be run and verified before recording their final timings and report results here.
+
+---
+
+## Phase 2 Questions
+
+### 1. What is the difference between starting a task and awaiting it?
+
+Starting an operation that returns a `Task` gives me a task representing that work. The work may begin before I await it. I can start other independent operations while that task is running.
+
+`await` asynchronously waits for that task to finish. It then gives me the result, or throws the exception stored by the task.
+
+### 2. Does every `Task` create a new thread? Does `Task.Delay()` use a thread while waiting?
+
+No. A `Task` represents an operation and its eventual completion; it does not always create a new thread. Asynchronous file or network operations can wait without occupying a thread.
+
+`Task.Delay()` uses a timer while waiting. It does not keep a thread blocked for the whole delay.
+
+### 3. What happens if you call `.Result` or `.Wait()` on an unfinished task instead of `await`? Why is it dangerous?
+
+`.Result` and `.Wait()` block the current thread until the task finishes. This can waste a thread and, in applications with a synchronization context, can cause a deadlock if the task's continuation needs that blocked context.
+
+This separate method demonstrates blocking. `.Wait()` and `.Result` should not be used elsewhere in the async flow:
+
+```csharp
+private static void BlockingWaitDemo()
+{
+    Task.Delay(500).Wait();
+}
+```
+
+### 4. What happens to an exception thrown inside a task that is never awaited?
+
+The task stores the exception. If nobody awaits the task or checks its exception, the failure may go unnoticed. The code that started the task does not automatically receive the exception at the point where the task was started.
+
+### 5. When should you use `Task.Run()`, and when should you avoid it?
+
+I use `Task.Run()` for CPU-bound synchronous work that would otherwise occupy the calling thread, such as the invoice rendering simulation.
+
+I avoid wrapping naturally asynchronous I/O, such as file or database calls, in `Task.Run()`. Those APIs already provide asynchronous waiting, and wrapping them would use a thread unnecessarily.
+
+### 6. What is the difference between `Task` and `Task<T>`?
+
+`Task` represents an operation that finishes without returning a value.
+
+`Task<T>` represents an operation that finishes with a value of type `T`. For example, `Task<Product?>` represents an asynchronous operation that returns a product or `null`.
+
+### 7. Why can a `lock` block not contain an `await`?
+
+A `lock` block must run synchronously, and C# does not allow `await` inside it. A `lock` uses a thread-bound monitor, while an async method may pause and continue later. For asynchronous mutual exclusion, `SemaphoreSlim` with `WaitAsync` can be used.
+
+### 8. Why did the unprotected stock reservation oversell, and how did you prevent it?
+
+Both orders read the same stock value before either one updated it. Each order saw one keyboard available and decided it could reserve it.
+
+I prevented this by putting the stock check and decrement together inside `JsonFileStore.UpdateAsync`. Its per-file `SemaphoreSlim` makes each update wait for the previous update to finish. The next order then reads the updated stock and cannot reserve an unavailable item.

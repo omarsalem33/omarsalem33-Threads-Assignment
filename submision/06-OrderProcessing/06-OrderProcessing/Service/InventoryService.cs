@@ -45,5 +45,7 @@ public class InventoryService
 
     public async Task<bool> ReserveStockSafeAsync(int productId, int qty, CancellationToken ct)
      => await _productRepository.ReserveStockAsync(productId, qty, ct);
-    
+
+    public async Task ReleaseStockAsync(int productId, int qty, CancellationToken ct)
+        => await _productRepository.ReleaseStockAsync(productId, qty, ct);
 }

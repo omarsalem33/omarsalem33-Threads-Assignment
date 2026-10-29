@@ -1,0 +1,12 @@
+Invoice #14
+-------------------------
+Customer ID: 5
+
+Product #8 | Quantity: 2 | Unit price: 70.00
+Product #5 | Quantity: 1 | Unit price: 45.00
+
+Subtotal: 185.00
+Discount: 46.25
+Shipping: 10.70
+Total:    149.45
+Status:   Validated

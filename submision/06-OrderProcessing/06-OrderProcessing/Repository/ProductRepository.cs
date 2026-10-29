@@ -69,4 +69,35 @@ public class ProductRepository
         Log.Success(source, $"Reserved {qty} units for Product #{productId}");
         return true;
     }
+
+    public async Task ReleaseStockAsync(int productId, int qty, CancellationToken ct)
+    {
+        if (qty <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(qty), qty, "Quantity must be greater than zero");
+        }
+        
+        const string source = nameof(ProductRepository);
+        string filePath = DataFiles.GetFullPath(DataFiles.Products);
+        bool productFound = false;
+
+        await JsonFileStore.UpdateAsync<List<Product>>(filePath, products =>
+        {
+            Product? product = products.FirstOrDefault(item => item.Id == productId);
+            if (product is null)
+            {
+                return products;
+            }
+
+            product.StockQuantity += qty;
+            productFound = true;
+
+            return products;
+        }, ct);
+        
+        if (!productFound)
+            throw new InvalidOperationException($"Product #{productId} was not found.");
+
+        Log.Success(source, $"Released {qty} units for Product #{productId}");
+    }
 }
