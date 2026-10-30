@@ -129,4 +129,7 @@ public class PricingService
 
         return Math.Round(shippingCost, 2, MidpointRounding.AwayFromZero);
     }
+    
+    public async  Task<decimal> CalculateTotalAsync(Order order, CancellationToken ct)
+        => (await CalculateSubTotalAsync(order, ct) + await CalculateShippingCostAsync(order, ct) ) - await GetDiscountAsync(order, ct);
 }
