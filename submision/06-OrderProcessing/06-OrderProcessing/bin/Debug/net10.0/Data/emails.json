@@ -1,0 +1,82 @@
+[
+  {
+    "id": "0b0820f4-2bb3-4a2b-8cca-a9b6822bc555",
+    "orderId": 5,
+    "to": "youssef.adel@example.com",
+    "subject": "Order #5 confirmation",
+    "body": "Your order #5 is confirmed. Total: $331.50",
+    "sentAt": "2026-10-30T18:35:53.0499867+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "be864e16-31dc-429b-98a6-9394208c6a44",
+    "orderId": 2,
+    "to": "sara.mohamed@example.com",
+    "subject": "Order #2 confirmation",
+    "body": "Your order #2 is confirmed. Total: $767.30",
+    "sentAt": "2026-10-30T18:35:53.189212+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "f0389b45-9d1e-4a5d-9872-a7d2b10eae81",
+    "orderId": 6,
+    "to": "nour.khaled@example.com",
+    "subject": "Order #6 confirmation",
+    "body": "Your order #6 is confirmed. Total: $42.90",
+    "sentAt": "2026-10-30T18:35:53.5183067+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "845ba238-07f1-4037-8be5-a729df0183e3",
+    "orderId": 10,
+    "to": "dina.fathy@example.com",
+    "subject": "Order #10 confirmation",
+    "body": "Your order #10 is confirmed. Total: $93.80",
+    "sentAt": "2026-10-30T18:35:53.6422514+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "766ebf53-5aa6-4e23-97b7-ae2e2a3ccc64",
+    "orderId": 8,
+    "to": "laila.mahmoud@example.com",
+    "subject": "Order #8 confirmation",
+    "body": "Your order #8 is confirmed. Total: $960.00",
+    "sentAt": "2026-10-30T18:35:53.7058838+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "14ab79ac-01ac-4c35-9336-904c945c372d",
+    "orderId": 1,
+    "to": "ahmed.ali@example.com",
+    "subject": "Order #1 confirmation",
+    "body": "Your order #1 is confirmed. Total: $980.00",
+    "sentAt": "2026-10-30T18:35:54.2372014+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "e28b7dd6-f50a-4def-9334-416611c04a8a",
+    "orderId": 3,
+    "to": "omar.hassan@example.com",
+    "subject": "Order #3 confirmation",
+    "body": "Your order #3 is confirmed. Total: $146.70",
+    "sentAt": "2026-10-30T18:35:54.5169165+02:00",
+    "attempts": 1,
+    "lastError": null
+  },
+  {
+    "id": "f9b53ff8-6d38-4086-a7e5-91f6185e9e1b",
+    "orderId": 7,
+    "to": "karim.samir@example.com",
+    "subject": "Order #7 confirmation",
+    "body": "Your order #7 is confirmed. Total: $218.00",
+    "sentAt": "2026-10-30T18:35:54.5791248+02:00",
+    "attempts": 1,
+    "lastError": null
+  }
+]
