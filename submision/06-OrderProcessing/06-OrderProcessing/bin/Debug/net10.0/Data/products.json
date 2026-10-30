@@ -10,7 +10,7 @@
     "id": 2,
     "name": "Smartphone",
     "price": 800.00,
-    "stockQuantity": 13,
+    "stockQuantity": 14,
     "weightKg": 0.4
   },
   {
@@ -31,14 +31,14 @@
     "id": 5,
     "name": "USB-C Hub",
     "price": 45.00,
-    "stockQuantity": 25,
+    "stockQuantity": 27,
     "weightKg": 0.2
   },
   {
     "id": 6,
     "name": "Headphones",
     "price": 150.00,
-    "stockQuantity": 10,
+    "stockQuantity": 11,
     "weightKg": 0.3
   },
   {
@@ -52,7 +52,7 @@
     "id": 8,
     "name": "Webcam",
     "price": 70.00,
-    "stockQuantity": 15,
+    "stockQuantity": 18,
     "weightKg": 0.2
   }
 ]

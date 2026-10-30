@@ -83,5 +83,10 @@ internal class Program
                 $"{order.Id,5} | {order.Status,-12} | " +
                 $"{order.TotalAmount,8:F2} | {order.FailureReason ?? "-"}");
         }
+        
+        
+        await DataSeeder.ResetAsync(cts.Token);
+        await Phase3Runner.RunComparisonAsync(cts.Token);
     }
+    
 }   

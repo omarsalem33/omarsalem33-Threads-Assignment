@@ -1,12 +1,1 @@
-[
-  {
-    "id": "ff11d251-a60b-4662-b274-af92ca9e6f5b",
-    "orderId": 17,
-    "to": "karim.samir@example.com",
-    "subject": "Order #17 confirmation",
-    "body": "Your order #17 is confirmed. Total: $687.30",
-    "sentAt": "2026-10-30T14:04:29.6832096+02:00",
-    "attempts": 4,
-    "lastError": "Email for order #17 failed on attempt 4."
-  }
-]
+[]

@@ -15,8 +15,9 @@ public sealed class OrderProcessor
     private readonly OrderRepository _orderRepository;
     private readonly IEmailService _emailService;
     private readonly ProductRepository _productRepository;
+    private readonly Action<int>? _threadObserved;
 
-    public OrderProcessor(CustomerService customerService, InventoryService inventoryService, PricingService pricingService, IPaymentGateway paymentGateway, OrderRepository orderRepository, IEmailService emailService, ProductRepository productRepository)
+    public OrderProcessor(CustomerService customerService, InventoryService inventoryService, PricingService pricingService, IPaymentGateway paymentGateway, OrderRepository orderRepository, IEmailService emailService, ProductRepository productRepository , Action<int>? threadObserved =null )
     {
         _customerService = customerService;
         _inventoryService = inventoryService;
@@ -25,6 +26,8 @@ public sealed class OrderProcessor
         _orderRepository = orderRepository;
         _emailService = emailService;
         _productRepository = productRepository;
+        _threadObserved = threadObserved;
+
     }
 
     public async Task<bool> ProcessOrderAsync(Order order, CancellationToken ct)
@@ -261,9 +264,12 @@ public sealed class OrderProcessor
             $"Email for Order #{order.Id} queued for retry later");
     }
 
-    private static void LogStep(int orderId, int step, string name, Stopwatch timer, string result)
+    private void LogStep(int orderId, int step, string name, Stopwatch timer, string result)
     {
+        _threadObserved?.Invoke(Environment.CurrentManagedThreadId);
+
         timer.Stop();
+
         Console.WriteLine(
             $"[{DateTime.Now:HH:mm:ss.fff}] " +
             $"[Thread {Environment.CurrentManagedThreadId}] " +

@@ -89,10 +89,10 @@ A repository may need to wait for a file or database operation. Returning `Task<
 
 I ran the sequential and concurrent pricing methods with Order #1. Both methods produced the same totals. The concurrent method took less elapsed time in this run.
 
-| Method | Time | Subtotal | Discount | Shipping | Total |
-|---|---:|---:|---:|---:|---:|
-| Sequential | 5.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
-| Concurrent | 3.64 s | 1225.00 | 245.00 | 0.00 | 980.00 |
+| Method     |   Time | Subtotal | Discount | Shipping |  Total |
+| ---------- | -----: | -------: | -------: | -------: | -----: |
+| Sequential | 5.64 s |  1225.00 |   245.00 |     0.00 | 980.00 |
+| Concurrent | 3.64 s |  1225.00 |   245.00 |     0.00 | 980.00 |
 
 These measurements are from one local run, so the times can change between runs. The logs showed the discount and shipping calls starting before either result was awaited in the concurrent method.
 
@@ -166,3 +166,30 @@ A `lock` block must run synchronously, and C# does not allow `await` inside it. 
 Both orders read the same stock value before either one updated it. Each order saw one keyboard available and decided it could reserve it.
 
 I prevented this by putting the stock check and decrement together inside `JsonFileStore.UpdateAsync`. Its per-file `SemaphoreSlim` makes each update wait for the previous update to finish. The next order then reads the updated stock and cannot reserve an unavailable item.
+
+## 9.6 - Sync vs Async Comparison
+
+**1. Does async make one order's workflow faster?**
+
+Not necessarily. Async does not make the database or API respond faster. One order still waits for the same operations. In my run, processing 10 orders took 11.92 seconds with the sync version and 7.10 seconds with the async version, because the async version handled the waits more efficiently.
+
+**2. Why does async scale better for many orders?**
+
+When a sync operation waits for a database, file, or API, its thread stays blocked. Async operations can release the thread while waiting, so the application can handle more work without needing a separate blocked thread for every operation.
+
+**3. What happens to the sync version with 1,000 orders?**
+
+It would need to create and manage 1,000 dedicated threads if it starts one thread per order. This uses more memory and increases thread scheduling and context switching. The application may become slower or run out of available resources.
+
+**4. Why is async essential for applications that call databases, files, and APIs?**
+
+These operations spend much of their time waiting for external resources. Async lets the application use its threads for other work during that time, which helps it remain responsive and handle more concurrent requests.
+
+### Results from my run
+
+| Version | Orders | Completed |   Rejected | Unique threads observed | Elapsed |
+| ------- | -----: | --------: | ---------: | ----------------------: | ------: |
+| Sync    |     10 |         8 | 2 (#4, #9) |                      10 | 11.92 s |
+| Async   |     10 |         8 | 2 (#4, #9) |                       5 |  7.10 s |
+
+The `ThreadPool.ThreadCount` readings were 9 → 6 during the sync run and 6 → 9 during the async run. These readings can change as the thread pool adds or retires idle threads.
