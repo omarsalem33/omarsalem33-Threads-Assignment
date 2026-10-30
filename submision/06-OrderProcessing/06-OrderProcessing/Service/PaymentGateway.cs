@@ -23,7 +23,7 @@ public class PaymentGateway :IPaymentGateway
 
       await Task.Delay(shouldTimeOut ? 5000 : 700, ct);
 
-      string transactionId = $"{Guid.NewGuid().ToString("N")[..12].ToUpperInvariant()}";
+      string transactionId = $"TXN-{Guid.NewGuid().ToString("N")[..12].ToUpperInvariant()}";
       
       bool declined = _failuresEnabled && _declineOrderIds.Contains(orderId);
 
@@ -76,8 +76,7 @@ public class PaymentGateway :IPaymentGateway
 
         if (!found)
         {
-            throw new InvalidOperationException(
-                $"Payment transaction '{transactionId}' was not found.");
+            throw new InvalidOperationException($"Payment transaction '{transactionId}' was not found.");
         }
     }
 }

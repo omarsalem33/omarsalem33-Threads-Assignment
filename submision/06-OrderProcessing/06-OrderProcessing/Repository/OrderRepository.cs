@@ -5,6 +5,15 @@ namespace _06_OrderProcessing.Repository;
 
 public class OrderRepository
 {
+    private readonly HashSet<int> _failSaveForOrderIds;
+    private readonly bool _failuresEnabled;
+
+    public OrderRepository(IEnumerable<int>? failSaveForOrderIds = null, bool failuresEnabled = true)
+    {
+        _failSaveForOrderIds = failSaveForOrderIds?.ToHashSet() ?? [];
+        _failuresEnabled = failuresEnabled;
+    }
+    
     public async Task SaveAsync(Order order, CancellationToken ct)
     {
         const string source = nameof(OrderRepository);
@@ -15,6 +24,13 @@ public class OrderRepository
         await Task.Delay(100, ct);
         Log.Info(source, $"Inserting or updating Order #{order.Id}...");
         await Task.Delay(400, ct);
+        
+        if (_failuresEnabled &&
+            order.Status == OrderStatus.Completed &&
+            _failSaveForOrderIds.Contains(order.Id))
+        {
+            throw new DatabaseWriteException("Connection lost during commit");
+        }
 
         string filePath = DataFiles.GetFullPath(DataFiles.Orders);
         await JsonFileStore.UpdateAsync<List<Order>>(filePath, orders =>

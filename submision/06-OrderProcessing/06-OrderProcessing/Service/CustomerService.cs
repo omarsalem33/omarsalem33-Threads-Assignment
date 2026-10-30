@@ -3,9 +3,9 @@ using _06_OrderProcessing.Repository;
 
 namespace _06_OrderProcessing.Service;
 
-public class CustomerServcie
+public class CustomerService
 {
-    public async Task<Customer?> GetCustomerAsync(int id, CancellationToken ct)
+    public async Task<Customer> GetCustomerAsync(int id, CancellationToken ct)
     {
         const string source = nameof(CustomerRepository);
         Log.Info(source,"Opening Connection");
@@ -21,10 +21,8 @@ public class CustomerServcie
         Customer? customer = customers.FirstOrDefault(c => c.Id == id);
 
         if (customer is null)
-        {
-            Log.Error(source, "Customer not found");
-            return null;
-        }
+            throw new CustomerNotFoundException($"Customer #{id} not found");
+
         Log.Success(source , $"Customer #{id} has been found");
         return customer;
         
