@@ -55,7 +55,7 @@ public class PricingService
 
         if (customer is null)
             throw new InvalidOperationException($"Customer {order.CustomerId} was not found.");
-
+        
         decimal discountPercent = customer.LoyaltyTier switch
         {
             LoyaltyTier.Bronze => 0,
@@ -63,21 +63,27 @@ public class PricingService
             LoyaltyTier.Gold => 10,
             _ => 0
         };
-
+        
         if (!string.IsNullOrWhiteSpace(order.CouponCode))
         {
             var coupon = await _couponRepository.GetByCodeAsync(order.CouponCode, ct);
 
             if (coupon is null)
-                throw new InvalidOperationException($"Coupon '{order.CouponCode}' was not found.");
+            {
+                throw new InvalidCouponException(
+                    $"Coupon '{order.CouponCode}' was not found.");
+            }
+
+            if (coupon.ExpiryDate < DateTime.Today)
+            {
+                throw new InvalidCouponException(
+                    $"Coupon '{order.CouponCode}' has expired.");
+            }
 
             discountPercent += coupon.DiscountPercent;
         }
-
         discountPercent = Math.Min(discountPercent, 30);
-
         decimal discount = order.SubTotal * discountPercent / 100;
-
         return Math.Round(discount, 2, MidpointRounding.AwayFromZero);
     }
 
@@ -130,6 +136,18 @@ public class PricingService
         return Math.Round(shippingCost, 2, MidpointRounding.AwayFromZero);
     }
     
-    public async  Task<decimal> CalculateTotalAsync(Order order, CancellationToken ct)
-        => (await CalculateSubTotalAsync(order, ct) + await CalculateShippingCostAsync(order, ct) ) - await GetDiscountAsync(order, ct);
+    public async Task<decimal> CalculateTotalAsync(Order order, CancellationToken ct)
+    {
+        order.SubTotal = await CalculateSubTotalAsync(order, ct);
+
+        Task<decimal> discountTask = GetDiscountAsync(order, ct);
+        Task<decimal> shippingTask = CalculateShippingCostAsync(order, ct);
+
+        order.Discount = await discountTask;
+        order.ShippingCost = await shippingTask;
+
+        order.TotalAmount = Math.Round(order.SubTotal - order.Discount + order.ShippingCost, 2, MidpointRounding.AwayFromZero);
+
+        return order.TotalAmount;
+    }
 }

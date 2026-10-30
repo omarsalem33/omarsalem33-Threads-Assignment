@@ -175,8 +175,7 @@ public static class Phase2Runner
         foreach (Order order in validatedOrders)
         {
             processingOrders.Add(order);
-            processingTasks.Add(
-                orderProcessor.ProcessValidatedOrderAsync(order, ct));
+            processingTasks.Add(orderProcessor.ProcessValidatedOrderAsync(order, ct));
 
             if (processingTasks.Count == 1)
             {

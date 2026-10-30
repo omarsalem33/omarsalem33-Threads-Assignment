@@ -32,12 +32,8 @@ public class OrderProcessorV2
             if (!reserved)
             {
                 foreach (OrderItem reservedItem in reservedItems)
-                {
-                    await _inventoryService.ReleaseStockAsync(
-                        reservedItem.ProductId,
-                        reservedItem.Quantity,
-                        ct);
-                }
+                    await _inventoryService.ReleaseStockAsync(reservedItem.ProductId, reservedItem.Quantity, ct);
+                
 
                 Product? product = await _productRepository.GetByIdAsync(item.ProductId, ct);
 
